@@ -72,9 +72,9 @@ exports.Mqtt = {
   transforms: {
     // transforms states strings...to use for example in Home Assistant to reflect H.A.'s  alarm control panel states
     states: {
-      disarmed: 'disarmed', // disarmed
-      partarmed: 'partarmed', // If you use Home Assistant you must set to 'armed_home'
-      armed: 'armed', // If you use  Home Assistant you must set to 'armed_away'
+      disarmed: '0', // disarmed. Domoticz: '0' (but it defaults to this value for other values)
+      partarmed: '10', // If you use Home Assistant you must set to 'armed_home'. Domoticz: '10'
+      armed: '20', // If you use  Home Assistant you must set to 'armed_away'. Domoticz: '20'
       onalarm: 'onalarm', // If you use  Home Assistant you must set to 'triggered'
     },
     // dummy devices in Domoticz
