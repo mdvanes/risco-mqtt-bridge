@@ -58,7 +58,8 @@ async function main() {
       // publish arm status
       // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ARMSTATUS}`, Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus], Config.Mqtt.msgOptions);
       mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "addlogmessage", "message": "riscoArmStatus: ${riscoPoller.riscoConn.riscoArmStatus}"}`, Config.Mqtt.msgOptions);
-      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight", "idx": ${Config.Mqtt.transforms.devices.ARMED}, "switchcmd": "Set Level", "level": ${riscoPoller.riscoConn.riscoArmStatus} }`, Config.Mqtt.msgOptions);
+      // mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight", "idx": ${Config.Mqtt.transforms.devices.ARMED}, "switchcmd": "Set Level", "level": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]} }`, Config.Mqtt.msgOptions);
+      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "udevice", "idx": ${Config.Mqtt.transforms.devices.ARMED}, "nvalue": 0, "svalue": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]} }`, Config.Mqtt.msgOptions);
       
       // publish isonAlarm (in case of alarm...)
       // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ISONALARM}`, riscoPoller.riscoConn.riscoOngoingAlarm.toString(), Config.Mqtt.msgOptions);
