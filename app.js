@@ -44,8 +44,8 @@ async function main() {
   riscoPoller.on('polled', () => {
     riscoLogger.log('debug', `Polled...counter:  ${riscoPoller.counter}`);
     riscoLogger.log('debug', riscoPoller.riscoConn);
-    mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT poll", "body": "batbatbat3: ${riscoPoller.counter}"}`, Config.Mqtt.msgOptions);
-    mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat3: ${riscoPoller.counter} ${riscoPoller.riscoConn}"}`, Config.Mqtt.msgOptions);
+    // mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT poll", "body": "batbatbat3: ${riscoPoller.counter}"}`, Config.Mqtt.msgOptions);
+    // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat3: ${riscoPoller.counter} ${riscoPoller.riscoConn}"}`, Config.Mqtt.msgOptions);
   });
 
   riscoPoller.on('newpanelstatus', async () => {
@@ -56,14 +56,17 @@ async function main() {
     if (riscoPoller.riscoConn.riscoArmStatus !== null) {
       riscoLogger.log('info', `Arming status: ${riscoPoller.riscoConn.riscoArmStatus}`);
       // publish arm status
-      mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ARMSTATUS}`, Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus], Config.Mqtt.msgOptions);
-
+      // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ARMSTATUS}`, Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus], Config.Mqtt.msgOptions);
+      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "addlogmessage", "message": "riscoArmStatus: ${riscoPoller.riscoConn.riscoArmStatus}"}`, Config.Mqtt.msgOptions);
+      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight", "idx": ${Config.Mqtt.transforms.devices.ARMED}, "switchcmd": "Set Level", "level": ${riscoPoller.riscoConn.riscoArmStatus} }`, Config.Mqtt.msgOptions);
+      
       // publish isonAlarm (in case of alarm...)
-      mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ISONALARM}`, riscoPoller.riscoConn.riscoOngoingAlarm.toString(), Config.Mqtt.msgOptions);
+      // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ISONALARM}`, riscoPoller.riscoConn.riscoOngoingAlarm.toString(), Config.Mqtt.msgOptions);
       // publish detectors
       const detectorsArray = riscoPoller.riscoConn.riscoDetectors.parts[0].detectors;
       const mqttDectsTopic = `${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.DETECTORS}`;
       // publish total numbers of detectors
+      /* Not yet supported for Domoticz
       mqttClient.publish(`${mqttDectsTopic}/count`, detectorsArray.length.toString(), Config.Mqtt.msgOptions);
       detectorsArray.forEach((element) => {
         const mqttMsg = JSON.stringify(element);
@@ -73,7 +76,9 @@ async function main() {
         if (element.filter !== '') sensState = element.filter;
         mqttClient.publish(`${mqttDectsTopic}/${element.id}/status`, sensState, Config.Mqtt.msgOptions);
       });
+      */
       // publish Event history (json as getted from Risco Cloud)
+      /* Not yet supported for Domoticz
       // All
       mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.EVENTHISTORY}`, JSON.stringify(riscoPoller.riscoConn.riscoEventHistory), Config.Mqtt.msgOptions);
       riscoLogger.log('debug', 'test publish to domoticz topic');
@@ -88,16 +93,18 @@ async function main() {
         const todayErrorEventsArray = todayEventsArray.filter(event => event.Priority === '');
         mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.EVENTHISTORY}/today/errors`, JSON.stringify(todayErrorEventsArray), Config.Mqtt.msgOptions);
         this.lastEventString = '';
+      */
         // TODO - format Log Events in tabular , for now only last event
         /*
       lastEventObj.forEach((element) => {
         this.lastEventString = `${element.YTimeToShow} - ${element.EventName}`;
-      });
+      });      
       */
+      /*  Not yet supported in Domoticz 
         // Last Event (not error, useful for knows who arm/disarm)
         this.lastEventString = (`${todayNotErrEventsArray[0].YTimeToShow} ${todayNotErrEventsArray[0].EventName}`).split('&#39;').join('');
         mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.EVENTHISTORY}/lastevent`, String(this.lastEventString), Config.Mqtt.msgOptions);
-      }
+      }*/
       riscoLogger.log('info', 'publish messages on MQTT Server');
     } else riscoLogger.log('debug', 'no new status');
   });
