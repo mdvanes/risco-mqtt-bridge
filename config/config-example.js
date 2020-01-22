@@ -60,7 +60,6 @@ exports.Mqtt = {
   msgOptions: {
     clientId: 'mqttjs_Risco',
     retain: true,
-
   },
   channels: {
     MAINCHAN: 'riscopanel', // Main Topic
@@ -68,6 +67,7 @@ exports.Mqtt = {
     DETECTORS: 'dects', // Detectors subtopic
     EVENTHISTORY: 'eventhistory', // Event History subtopic
     ISONALARM: 'isonalarm', // Topic for receiving ongoing alarm
+    DOMOTICZCHAN: 'domoticz/in', // Domoticz only supports a single topic in flat mode
   },
   transforms: {
     // transforms states strings...to use for example in Home Assistant to reflect H.A.'s  alarm control panel states
@@ -76,6 +76,21 @@ exports.Mqtt = {
       partarmed: 'partarmed', // If you use Home Assistant you must set to 'armed_home'
       armed: 'armed', // If you use  Home Assistant you must set to 'armed_away'
       onalarm: 'onalarm', // If you use  Home Assistant you must set to 'triggered'
+    },
+    // dummy devices in Domoticz
+    devices: {
+      /*
+      Armed state
+      Create a custom switch of type Selector, with levels (0 disarmed, 10, partarmed, 20 armed) 
+      The value here is the device ID
+      */
+      ARMED: 1406,
+      /*
+      On Alarm
+      Create a custom switch of type on/off
+      The value here is the device ID
+      */
+      ONALARM: 1407,
     },
   },
 };
