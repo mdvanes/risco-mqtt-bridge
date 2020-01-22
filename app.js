@@ -43,10 +43,16 @@ async function main() {
 
   riscoPoller.on('polled', () => {
     riscoLogger.log('debug', `Polled...counter:  ${riscoPoller.counter}`);
+    riscoLogger.log('debug', riscoPoller.riscoConn);
+    mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT poll", "body": "batbatbat3: ${riscoPoller.counter}"}`, Config.Mqtt.msgOptions);
+    mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat3: ${riscoPoller.counter} ${riscoPoller.riscoConn}"}`, Config.Mqtt.msgOptions);
   });
 
   riscoPoller.on('newpanelstatus', async () => {
     riscoLogger.log('debug', 'newarmstatus emitted');
+    riscoLogger.log('debug', 'test publish to domoticz topic2');
+    // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
+
     if (riscoPoller.riscoConn.riscoArmStatus !== null) {
       riscoLogger.log('info', `Arming status: ${riscoPoller.riscoConn.riscoArmStatus}`);
       // publish arm status
@@ -70,6 +76,8 @@ async function main() {
       // publish Event history (json as getted from Risco Cloud)
       // All
       mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.EVENTHISTORY}`, JSON.stringify(riscoPoller.riscoConn.riscoEventHistory), Config.Mqtt.msgOptions);
+      riscoLogger.log('debug', 'test publish to domoticz topic');
+      mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat"}`, Config.Mqtt.msgOptions);
       // Today
       //   ..... sometimes is empty , check
       if (riscoPoller.riscoConn.riscoEventHistory[0].LogRecords) {
