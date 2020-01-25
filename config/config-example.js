@@ -82,12 +82,14 @@ exports.Mqtt = {
       /*
       Armed state
       Create a custom switch of type Selector, with levels (0 disarmed, 10, partarmed, 20 armed) 
+      Edit the switch and set "protected" to true to prevent using the UI to change the value.
       The value here is the device ID
       */
       ARMED: 1406,
       /*
       On Alarm
       Create a custom switch of type on/off
+      Edit the switch and set "protected" to true to prevent using the UI to change the value.
       The value here is the device ID
       */
       ONALARM: 1407,
