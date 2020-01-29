@@ -1,0 +1,16 @@
+# place in /lib/systemd/system/riscomqttbridge.service
+# commands:
+# sudo service riscomqttbridge start
+# sudo service riscomqttbridge stop
+# sudo service riscomqttbridge status
+# sudo service riscomqttbridge restart
+
+[Unit]
+Description=run node server for risco-mqtt-bridge
+
+[Service]
+WorkingDirectory=/opt/risco-mqtt-bridge/
+# Disable debug logging with production mode, logs will be written to ./logs/
+Environment="NODE_ENV=production"
+# needs absolute path to node binary, e.g. /bin/node
+ExecStart=/bin/node app.js
