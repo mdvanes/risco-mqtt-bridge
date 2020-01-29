@@ -20,7 +20,7 @@ However it is highly recommended not to share your cloud data (username, passwor
 
 * [Node.js](https://nodejs.org) (currently tested with >=ver. 8.x)
 * Mqtt Server - e.g. [Mosquitto](http://www.mosquitto.org), [HiveMQ](https://www.hivemq.com/), etc.
-* An home automation controller. This fork has modifications to (only) support [Domoticz](https://www.domoticz.com/). ~~like [Openhab](https://www.openhab.org/), [Home Assistant](https://www.home-assistant.io) or others (probably the reason why you're here :blush: ) ~~
+* An home automation controller. This fork has modifications to (only) support [Domoticz](https://www.domoticz.com/). <strike>like [Openhab](https://www.openhab.org/), [Home Assistant](https://www.home-assistant.io) or others (probably the reason why you're here :blush: ) </strike>
 
 ## Installation
 
