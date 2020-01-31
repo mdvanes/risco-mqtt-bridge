@@ -59,15 +59,11 @@ async function main() {
 
   riscoPoller.on('polled', () => {
     riscoLogger.log('debug', `Polled...counter:  ${riscoPoller.counter}`);
-    riscoLogger.log('debug', riscoPoller.riscoConn);
-    // mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT poll", "body": "batbatbat3: ${riscoPoller.counter}"}`, Config.Mqtt.msgOptions);
-    // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat3: ${riscoPoller.counter} ${riscoPoller.riscoConn}"}`, Config.Mqtt.msgOptions);
   });
 
   riscoPoller.on('newpanelstatus', async () => {
     // riscoLogger.log('debug', `newarmstatus emitted ${riscoPoller.riscoConn.riscoArmStatus} ${JSON.stringify(riscoPoller.riscoConn, getCircularReplacer())}`);
     riscoLogger.log('debug', `Newpanelstatus armStatus: ${riscoPoller.riscoConn.riscoArmStatus} isLogged: ${riscoPoller.riscoConn.isLogged}`);
-    // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
 
     if (!riscoPoller.riscoConn.isLogged) {
 	    if (loginPoller < 3) {
@@ -88,8 +84,11 @@ async function main() {
       // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ARMSTATUS}`, Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus], Config.Mqtt.msgOptions);
       mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "addlogmessage", "message": "riscoArmStatus: ${riscoPoller.riscoConn.riscoArmStatus}"}`, Config.Mqtt.msgOptions);
       // mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight", "idx": ${Config.Mqtt.transforms.devices.ARMED}, "switchcmd": "Set Level", "level": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]} }`, Config.Mqtt.msgOptions);
-      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "udevice", "idx": ${Config.Mqtt.transforms.devices.ARMED}, "nvalue": 0, "svalue": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]} }`, Config.Mqtt.msgOptions);
-      
+      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "udevice", 
+"idx": ${Config.Mqtt.transforms.devices.ARMED}, 
+"nvalue": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]}, 
+"svalue": "${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]}" }`, Config.Mqtt.msgOptions);
+
       // publish isonAlarm (in case of alarm...)
       // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ISONALARM}`, riscoPoller.riscoConn.riscoOngoingAlarm.toString(), Config.Mqtt.msgOptions);
       // publish detectors
