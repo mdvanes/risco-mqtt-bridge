@@ -8,6 +8,22 @@ const riscoLogger = require('./logger');
 // const app = express(); // TODO
 const riscoPoller = new RiscoPoller(Config.Conn.POLLINGINTERVAL);
 
+let loginPoller = 0;
+
+const getCircularReplacer = () => {
+  const seen = new WeakSet();
+  return (key, value) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return;
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+};
+
+
 async function main() {
   /* TODO
   // express server
@@ -49,9 +65,22 @@ async function main() {
   });
 
   riscoPoller.on('newpanelstatus', async () => {
-    riscoLogger.log('debug', 'newarmstatus emitted');
-    riscoLogger.log('debug', 'test publish to domoticz topic2');
+    // riscoLogger.log('debug', `newarmstatus emitted ${riscoPoller.riscoConn.riscoArmStatus} ${JSON.stringify(riscoPoller.riscoConn, getCircularReplacer())}`);
+    riscoLogger.log('debug', `Newpanelstatus armStatus: ${riscoPoller.riscoConn.riscoArmStatus} isLogged: ${riscoPoller.riscoConn.isLogged}`);
     // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
+
+    if (!riscoPoller.riscoConn.isLogged) {
+	    if (loginPoller < 3) {
+		    loginPoller += 1;
+      } else {
+		    // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
+	      await mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT login", "body": "Failure logging in"}`, Config.Mqtt.msgOptions);
+        setTimeout(() => {
+			    riscoLogger.log('debug', `Failure logging in, shutting down...`);
+          process.exit(1);
+		    }, 2000);
+      }
+    }
 
     if (riscoPoller.riscoConn.riscoArmStatus !== null) {
       riscoLogger.log('info', `Arming status: ${riscoPoller.riscoConn.riscoArmStatus}`);
