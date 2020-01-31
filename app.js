@@ -66,15 +66,15 @@ async function main() {
     riscoLogger.log('debug', `Newpanelstatus armStatus: ${riscoPoller.riscoConn.riscoArmStatus} isLogged: ${riscoPoller.riscoConn.isLogged}`);
 
     if (!riscoPoller.riscoConn.isLogged) {
-	    if (loginPoller < 3) {
-		    loginPoller += 1;
+      if (loginPoller < 3) {
+        loginPoller += 1;
       } else {
-		    // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
-	      await mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT login", "body": "Failure logging in"}`, Config.Mqtt.msgOptions);
+        // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
+        await mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT login", "body": "Failure logging in"}`, Config.Mqtt.msgOptions);
         setTimeout(() => {
-			    riscoLogger.log('debug', `Failure logging in, shutting down...`);
+          riscoLogger.log('debug', `Failure logging in, shutting down...`);
           process.exit(1);
-		    }, 2000);
+        }, 2000);
       }
     }
 
@@ -89,14 +89,18 @@ async function main() {
 "nvalue": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]}, 
 "svalue": "${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]}" }`, Config.Mqtt.msgOptions);
 
+      // Not yet supported for Domoticz
       // publish isonAlarm (in case of alarm...)
       // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ISONALARM}`, riscoPoller.riscoConn.riscoOngoingAlarm.toString(), Config.Mqtt.msgOptions);
+
       // publish detectors
       const detectorsArray = riscoPoller.riscoConn.riscoDetectors.parts[0].detectors;
-      const mqttDectsTopic = `${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.DETECTORS}`;
+      // const mqttDectsTopic = `${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.DETECTORS}`;
+
       // publish total numbers of detectors
-      /* Not yet supported for Domoticz
-      mqttClient.publish(`${mqttDectsTopic}/count`, detectorsArray.length.toString(), Config.Mqtt.msgOptions);
+      // This works, but is not very informative: mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "addlogmessage", "message": "number of detectors: ${detectorsArray.length.toString()}"}`, Config.Mqtt.msgOptions);
+
+      /*
       detectorsArray.forEach((element) => {
         const mqttMsg = JSON.stringify(element);
         mqttClient.publish(`${mqttDectsTopic}/${element.id}`, mqttMsg, Config.Mqtt.msgOptions);
@@ -104,8 +108,17 @@ async function main() {
         let sensState = 'active';
         if (element.filter !== '') sensState = element.filter;
         mqttClient.publish(`${mqttDectsTopic}/${element.id}/status`, sensState, Config.Mqtt.msgOptions);
+        mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "addlogmessage", "message": "number of detectors: ${detectorsArray.length.toString()}"}`, Config.Mqtt.msgOptions);
       });
       */
+
+      // publish current sensor state
+      detectorsArray.filter(detector => detector.filter !== "").forEach(detector => 
+        mqttClient.publish(
+          `${Config.Mqtt.channels.DOMOTICZCHAN}`, 
+          `{"command": "addlogmessage", "message": "${detector.name} is ${detector.filter}"}`, 
+          Config.Mqtt.msgOptions));
+
       // publish Event history (json as getted from Risco Cloud)
       /* Not yet supported for Domoticz
       // All
