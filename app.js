@@ -9,6 +9,7 @@ const riscoLogger = require('./logger');
 const riscoPoller = new RiscoPoller(Config.Conn.POLLINGINTERVAL);
 
 let loginPoller = 0;
+let prevArmStatus = null;
 
 const getCircularReplacer = () => {
   const seen = new WeakSet();
@@ -82,19 +83,40 @@ async function main() {
       riscoLogger.log('info', `Arming status: ${riscoPoller.riscoConn.riscoArmStatus}`);
       // publish arm status
       // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ARMSTATUS}`, Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus], Config.Mqtt.msgOptions);
-      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "addlogmessage", "message": "riscoArmStatus: ${riscoPoller.riscoConn.riscoArmStatus}"}`, Config.Mqtt.msgOptions);
+      // mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "addlogmessage", "message": "riscoArmStatus: ${riscoPoller.riscoConn.riscoArmStatus}"}`, Config.Mqtt.msgOptions);
       // mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight", "idx": ${Config.Mqtt.transforms.devices.ARMED}, "switchcmd": "Set Level", "level": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]} }`, Config.Mqtt.msgOptions);
-      mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "udevice", 
+
+      // Prevent duplicate switch events for the same armStatus
+      // It would be nice to retrieve the current arm status, but this does not work
+      /* const foo = await mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "getdeviceinfo", 
+"idx": ${Config.Mqtt.transforms.devices.ARMED} }`, Config.Mqtt.msgOptions);
+      riscoLogger.log('debug', `foo=${foo}`); */
+      // Workaround: store in local variable
+      if (prevArmStatus !== riscoPoller.riscoConn.riscoArmStatus) {
+        prevArmStatus = riscoPoller.riscoConn.riscoArmStatus;
+        // Command "udevice" works for all purposes, except conditional notification (each value is seen as "off")
+        /*
+        mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "udevice", 
 "idx": ${Config.Mqtt.transforms.devices.ARMED}, 
 "nvalue": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]}, 
 "svalue": "${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]}" }`, Config.Mqtt.msgOptions);
+        */
+        // Use command "switchlight" instead of "udevice" to fix conditional notifications
+mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight", 
+"idx": ${Config.Mqtt.transforms.devices.ARMED}, 
+"switchcmd": "Set Level", 
+"level": ${Config.Mqtt.transforms.states[riscoPoller.riscoConn.riscoArmStatus]} }`, Config.Mqtt.msgOptions);
+      }
 
       // Not yet supported for Domoticz
       // publish isonAlarm (in case of alarm...)
       // mqttClient.publish(`${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.ISONALARM}`, riscoPoller.riscoConn.riscoOngoingAlarm.toString(), Config.Mqtt.msgOptions);
 
       // publish detectors
-      const detectorsArray = riscoPoller.riscoConn.riscoDetectors.parts[0].detectors;
+      const detectorsArray = riscoPoller.riscoConn.riscoDetectors ? riscoPoller.riscoConn.riscoDetectors.parts[0].detectors : [];
+      if (detectorsArray.length === 0) {
+        riscoLogger.log('debug', 'detectorsArray [] because riscoConn.riscoDetectors undefined');
+      }
       // const mqttDectsTopic = `${Config.Mqtt.channels.MAINCHAN}/${Config.Mqtt.channels.DETECTORS}`;
 
       // publish total numbers of detectors
