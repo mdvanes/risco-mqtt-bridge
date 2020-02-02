@@ -93,6 +93,29 @@ exports.Mqtt = {
       The value here is the device ID
       */
       ONALARM: 1407,
+      /*
+      For each detector, create a device mapping that looks like this in Domoticz
+      Hardware: Dummy, Switch Type: Door Contact, Type: AC
+      Edit the switch and set to "protected"
+      and add to the array below:
+      {
+        description: "front door magnet switch",
+        idx: Device ID in Domoticz,
+        detectorId: ID from detector array in Risco response JSON
+      }
+      */
+      detectors: [
+        {
+          description: "front door magnet switch",
+          idx: 1422,
+          detectorId: 0
+        },
+        {
+          description: "back door magnet switch",
+          idx: 1421,
+          detectorId: 3
+        }
+      ],
     },
   },
 };
