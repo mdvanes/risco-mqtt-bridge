@@ -5,6 +5,8 @@ const RiscoPoller = require('./panelPoller');
 const Config = require('./config/config');
 const riscoLogger = require('./logger');
 
+const MAX_LOGIN_ATTEMPTS = 2;
+
 // const app = express(); // TODO
 const riscoPoller = new RiscoPoller(Config.Conn.POLLINGINTERVAL);
 
@@ -67,7 +69,7 @@ async function main() {
     riscoLogger.log('debug', `Newpanelstatus armStatus: ${riscoPoller.riscoConn.riscoArmStatus} isLogged: ${riscoPoller.riscoConn.isLogged}`);
 
     if (!riscoPoller.riscoConn.isLogged) {
-      if (loginPoller < 3) {
+      if (loginPoller < MAX_LOGIN_ATTEMPTS) {
         loginPoller += 1;
       } else {
         // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
@@ -135,11 +137,29 @@ mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchl
       */
 
       // publish current sensor state
+      /*
       detectorsArray.filter(detector => detector.filter !== "").forEach(detector => 
         mqttClient.publish(
           `${Config.Mqtt.channels.DOMOTICZCHAN}`, 
           `{"command": "addlogmessage", "message": "${detector.name} is ${detector.filter}"}`, 
           Config.Mqtt.msgOptions));
+      */
+      Config.Mqtt.transforms.devices.detectors
+        .map(detector => {
+          const newState = detectorsArray.find(det => det.id === detector.detectorId);
+          if (newState) {
+            const newCmd = newState.filter === "" ? "Off" : "On";
+            return `{"command": "switchlight",
+"idx": ${detector.idx},
+"switchcmd": "${newCmd}" }`;
+          }
+          return null;
+        })
+        .forEach(str => {
+          if (str) {
+            mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, str, Config.Mqtt.msgOptions);
+          }
+        });
 
       // publish Event history (json as getted from Risco Cloud)
       /* Not yet supported for Domoticz
