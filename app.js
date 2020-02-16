@@ -73,6 +73,10 @@ async function main() {
         loginPoller += 1;
       } else {
         // mqttClient.publish(`domoticz/in`, `{"command": "addlogmessage", "message": "batbatbat2: ${riscoPoller.riscoConn.riscoEventHistory}"}`, Config.Mqtt.msgOptions);
+        mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight",
+          "idx": ${Config.Mqtt.transforms.devices.ARMED},
+          "switchcmd": "Set Level",
+          "level": ${Config.Mqtt.transforms.states[0]} }`, Config.Mqtt.msgOptions);
         await mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT login", "body": "Failure logging in"}`, Config.Mqtt.msgOptions);
         setTimeout(() => {
           riscoLogger.log('debug', `Failure logging in, shutting down...`);
