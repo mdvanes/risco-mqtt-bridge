@@ -76,7 +76,7 @@ async function main() {
         mqttClient.publish(`${Config.Mqtt.channels.DOMOTICZCHAN}`, `{"command": "switchlight",
           "idx": ${Config.Mqtt.transforms.devices.ARMED},
           "switchcmd": "Set Level",
-          "level": ${Config.Mqtt.transforms.states[0]} }`, Config.Mqtt.msgOptions);
+          "level": ${Config.Mqtt.transforms.states['disconnected']} }`, Config.Mqtt.msgOptions);
         await mqttClient.publish(`domoticz/in`, `{"command": "sendnotification", "subject": "MQTT login", "body": "Failure logging in"}`, Config.Mqtt.msgOptions);
         setTimeout(() => {
           riscoLogger.log('debug', `Failure logging in, shutting down...`);
